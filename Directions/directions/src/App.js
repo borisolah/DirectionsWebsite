@@ -69,10 +69,10 @@ function App() {
 
     const origin = markers[0];
     const destination = markers[markers.length - 1];
-    const waypoints = markers.slice(1, -1);
+    const waypoints = markers.filter(m => `Truck ${m.truck}` === truck );
 
     const MAX_WAYPOINTS = 25;
-    const numLegs = Math.ceil(waypoints.length / MAX_WAYPOINTS);
+    const numLegs = Math.floor(1, Math.ceil(waypoints.length / MAX_WAYPOINTS));
     const legs = [];
 
     for (let i = 0; i < numLegs; i++) {
