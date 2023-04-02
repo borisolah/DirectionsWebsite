@@ -1,20 +1,16 @@
 import { Box, Flex, HStack, Text, Select } from "@chakra-ui/react";
 import { GoogleMap, Marker, DirectionsRenderer } from "@react-google-maps/api";
+import database from "./database";
 import { useState, useEffect } from "react";
-import extractSenderAndReceiverInfo from "./databaseconverter/extractInfo";
-import { useDatabase } from "./databaseconverter/useDatabase";
+import getAddress from "./components/getAdress";
+import TruckSelector from "./components/TruckSelector";
+import LocationsList from "./components/LocationsList";
 import {
-  getAddress,
-  TruckSelector,
-  LocationsList,
-  createNumberedColoredMarkerIcon,
-  formatDistance,
-  formatDuration,
   truckColors,
   startingPoint,
   center,
   trucks,
-} from "./components";
+} from "./components/constants";
 import { useIsLoaded } from "./components/useIsLoaded";
 function App() {
   const isLoaded = useIsLoaded();
@@ -22,15 +18,11 @@ function App() {
   const [distance, setDistance] = useState(0);
   const [duration, setDuration] = useState(0);
   const [addresses, setAddresses] = useState([]);
-  const [loadingadresses, setLoadingAdresses] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [selectedTruck, setSelectedTruck] = useState(trucks[0]);
   const [directions, setDirections] = useState(null);
   const [directionsError, setDirectionsError] = useState(null);
-  const [database, loading] = useDatabase();
   const [markerData, setMarkerData] = useState(database);
-
-  const { senderInformation, receiverInformation } =
-    extractSenderAndReceiverInfo(database);
 
   async function handleClick(markerIndex) {
     if (selectedTruck !== "Marks Without A Truck") {
@@ -45,6 +37,7 @@ function App() {
 
       setMarkerData(updatedMarkerData);
 
+      // Recalculate directions with the updated markerData
       const markersByTruck = groupMarkersByTruck(
         updatedMarkerData,
         addresses,
@@ -52,6 +45,19 @@ function App() {
       );
       await calculateDirections(selectedTruck, markersByTruck);
     }
+  }
+
+  function createNumberedColoredMarkerIcon(color, number) {
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 36">
+      <path d="M12 0C5.4 0 0 5.4 0 12C0 18.6 12 36 12 36S24 18.6 24 12C24 5.4 18.6 0 12 0Z" fill="${color}" stroke="black" stroke-width="2" />
+      <text x="50%" y="50%" text-anchor="middle" dy=".3em" font-size="12px" font-weight="bold" fill="white">${number}</text>
+    </svg>`;
+
+    return {
+      url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg),
+      anchor: new window.google.maps.Point(12, 36),
+      scaledSize: new window.google.maps.Size(24, 36),
+    };
   }
 
   async function calculateDirections(truck, markers) {
@@ -82,6 +88,7 @@ function App() {
 
       const legResult = await new Promise((resolve, reject) => {
         const directionsService = new window.google.maps.DirectionsService();
+        console.log("Directions API has been used");
 
         directionsService.route(
           {
@@ -175,7 +182,6 @@ function App() {
       ) {
         if (!markersByTruck[truck]) {
           markersByTruck[truck] = [];
-          console.log(markersByTruck[truck]);
         }
         markersByTruck[truck].push({ ...position, id: i });
       }
@@ -204,9 +210,24 @@ function App() {
     return [...selectedTruckMarkers, ...(markersByTruck["NoTruck"] || [])];
   }
 
-  async function fetchBatchAddresses(positions) {
+  function formatDuration(duration) {
+    const hours = Math.floor(duration / 3600);
+    const minutes = Math.floor((duration % 3600) / 60);
+    const seconds = Math.floor(duration % 60);
+
+    return `${hours > 0 ? hours + "h " : ""}${
+      minutes > 0 ? minutes + "m " : ""
+    }${seconds > 0 ? seconds + "s" : ""}`;
+  }
+
+  function formatDistance(distance) {
+    const kilometers = (distance / 1000).toFixed(2);
+    return `${kilometers} km`;
+  }
+
+  async function fetchBatchAddresses(positions, apiKey) {
     const requests = positions.map((position) =>
-      getAddress(position.address_street, position.address_city)
+      getAddress(position.lat, position.lng, apiKey)
     );
     const results = await Promise.allSettled(requests);
 
@@ -227,6 +248,7 @@ function App() {
       return true;
     });
 
+    // Add startingPoint to the beginning and end of the markers array.
     markersByTruck.unshift(startingPoint);
     markersByTruck.push(startingPoint);
 
@@ -243,17 +265,17 @@ function App() {
 
   useEffect(() => {
     const fetchAddresses = async () => {
-      setLoadingAdresses(true);
+      setLoading(true);
 
       const batchSize = 10;
-      for (let i = 0; i < receiverInformation.length; i += batchSize) {
-        const positionBatch = receiverInformation.slice(i, i + batchSize);
-
+      for (let i = 0; i < database.length; i += batchSize) {
+        const positionBatch = database.slice(i, i + batchSize);
         try {
           const batchAddresses = await fetchBatchAddresses(
             positionBatch,
             `${process.env.REACT_APP_GOOGLE_MAPS_API_KEY}`
           );
+          console.log("Geocoding API has been used");
 
           setAddresses((prevAddresses) => [
             ...prevAddresses.slice(0, i),
@@ -270,7 +292,7 @@ function App() {
         }
       }
 
-      setLoadingAdresses(false);
+      setLoading(false);
     };
 
     if (isLoaded) {
@@ -278,8 +300,8 @@ function App() {
     }
   }, [isLoaded, database]);
 
-  if (loading || !isLoaded) {
-    return <div>Loading...</div>;
+  if (!isLoaded) {
+    return <h2>Loading...</h2>;
   }
 
   return (
@@ -307,7 +329,8 @@ function App() {
         >
           {groupMarkersByTruck(database, addresses, selectedTruck)
             .filter((position) => {
-              return !(position.lat === 13 && position.lng === 0);
+              // Filter out the marker you want to remove by checking its coordinates
+              return position.lat !== 13 && position.lng !== 0;
             })
             .map((position, index) => {
               const isStartingOrEndingPoint =
@@ -398,3 +421,35 @@ function App() {
 }
 
 export default App;
+
+function parseSerializedString(serializedString) {
+  const regex = /"([^"]*)"/g;
+  let match;
+  const result = {};
+
+  while ((match = regex.exec(serializedString)) !== null) {
+    const key = match[1];
+    match = regex.exec(serializedString);
+    const value = match[1];
+    result[key] = value;
+  }
+
+  return result;
+}
+
+function extractSenderAndReceiverInfo(database) {
+  const senderInformation = [];
+  const receiverInformation = [];
+
+  for (const item of database) {
+    const pckSenderString = item.pck_sender;
+    const pckSenderObject = parseSerializedString(pckSenderString);
+    senderInformation.push(pckSenderObject);
+
+    const pckReceiverString = item.pck_receiver;
+    const pckReceiverObject = parseSerializedString(pckReceiverString);
+    receiverInformation.push(pckReceiverObject);
+  }
+
+  return { senderInformation, receiverInformation };
+}

@@ -1,7 +1,9 @@
-// components/getAdress.js
-const getAddress = async (lat, lng, apiKey) => {
+const getAddress = async (streetAddress, cityName) => {
+  const encodedAddress = encodeURIComponent(streetAddress);
+  const encodedCity = encodeURIComponent(cityName);
+
   const response = await fetch(
-    `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${process.env.REACT_APP_GOOGLE_MAPS_API_KEY}`
+    `https://maps.googleapis.com/maps/api/geocode/json?address=${encodedAddress},+${encodedCity}&key=${process.env.REACT_APP_GOOGLE_MAPS_API_KEY}`
   );
 
   if (!response.ok) {
