@@ -9,6 +9,8 @@ async function extractSenderAndReceiverInfo(preDatabase) {
     const pckReceiverString = item.pck_receiver;
     const pckReceiverObject = parseSerializedString(pckReceiverString);
 
+    console.log("pckRecieverObject", pckReceiverObject);
+
     const receiverLatLng = await getLatLng(
       pckReceiverObject.address_street,
       pckReceiverObject.address_city
@@ -24,7 +26,6 @@ async function extractSenderAndReceiverInfo(preDatabase) {
   });
 
   const newDatabase = await Promise.all(newDatabasePromises);
-  console.log(newDatabase);
   return newDatabase;
 }
 

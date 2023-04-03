@@ -1,4 +1,3 @@
-export { default as getAddress } from "./getAddress";
 export { default as TruckSelector } from "./TruckSelector";
 export { default as LocationsList } from "./LocationsList";
 export { default as createNumberedColoredMarkerIcon } from "./markerIcon";

@@ -16,6 +16,7 @@ import {
   trucks,
 } from "./components";
 import { useIsLoaded } from "./components/useIsLoaded";
+import getLatLng from "./components/getLatLng";
 function App() {
   const isLoaded = useIsLoaded();
   const [orderedAddresses, setOrderedAddresses] = useState([]);
@@ -33,23 +34,24 @@ function App() {
     extractSenderAndReceiverInfo(database);
 
   async function handleClick(markerIndex) {
+    console.log("database", database);
+    console.log("markerData", markerData);
     if (selectedTruck !== "Marks Without A Truck") {
       const truckNumber = selectedTruck.split(" ")[1];
       const updatedMarkerData = [...markerData];
+      console.log(updatedMarkerData, "updatedmarkerdata is empty");
 
-      if (updatedMarkerData[markerIndex].truck !== parseInt(truckNumber)) {
-        updatedMarkerData[markerIndex].truck = parseInt(truckNumber);
+      const markersByTruck = groupMarkersByTruck(database, selectedTruck);
+      const markerId = markersByTruck[markerIndex].id;
+
+      if (updatedMarkerData[markerId].truck !== parseInt(truckNumber)) {
+        updatedMarkerData[markerId].truck = parseInt(truckNumber);
       } else {
-        updatedMarkerData[markerIndex].truck = null;
+        updatedMarkerData[markerId].truck = null;
       }
 
       setMarkerData(updatedMarkerData);
 
-      const markersByTruck = groupMarkersByTruck(
-        updatedMarkerData,
-        addresses,
-        selectedTruck
-      );
       await calculateDirections(selectedTruck, markersByTruck);
     }
   }
@@ -157,7 +159,7 @@ function App() {
     setDuration(totalDuration);
   }
 
-  function groupMarkersByTruck(database, addresses, selectedTruck) {
+  function groupMarkersByTruck(database, selectedTruck) {
     const markersByTruck = {};
 
     for (let i = 0; i < database.length; i++) {
@@ -175,7 +177,6 @@ function App() {
       ) {
         if (!markersByTruck[truck]) {
           markersByTruck[truck] = [];
-          console.log(markersByTruck[truck]);
         }
         markersByTruck[truck].push({ ...position, id: i });
       }
@@ -206,7 +207,7 @@ function App() {
 
   async function fetchBatchAddresses(positions) {
     const requests = positions.map((position) =>
-      getAddress(position.address_street, position.address_city)
+      getLatLng(position.address_street, position.address_city)
     );
     const results = await Promise.allSettled(requests);
 
@@ -215,11 +216,8 @@ function App() {
     );
   }
   useEffect(() => {
-    let markersByTruck = groupMarkersByTruck(
-      database,
-      addresses,
-      selectedTruck
-    );
+    let markersByTruck = groupMarkersByTruck(database, selectedTruck);
+
     markersByTruck = markersByTruck.filter((marker) => {
       if (selectedTruck !== "Marks Without A Truck") {
         return database[marker.id]?.truck;
@@ -239,7 +237,7 @@ function App() {
     } else {
       calculateDirections(selectedTruck, markersByTruck);
     }
-  }, [selectedTruck, database, addresses]);
+  }, [selectedTruck, database]);
 
   useEffect(() => {
     const fetchAddresses = async () => {
@@ -305,7 +303,7 @@ function App() {
             mapTypeControl: false,
           }}
         >
-          {groupMarkersByTruck(database, addresses, selectedTruck)
+          {groupMarkersByTruck(database, selectedTruck)
             .filter((position) => {
               return !(position.lat === 13 && position.lng === 0);
             })
@@ -313,9 +311,7 @@ function App() {
               const isStartingOrEndingPoint =
                 index === 0 ||
                 index ===
-                  groupMarkersByTruck(database, addresses, selectedTruck)
-                    .length -
-                    1;
+                  groupMarkersByTruck(database, selectedTruck).length - 1;
               const truck = database.find(
                 (entry) =>
                   entry.lat === position.lat && entry.lng === position.lng
