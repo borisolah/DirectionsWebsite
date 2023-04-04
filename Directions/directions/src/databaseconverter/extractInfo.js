@@ -9,12 +9,11 @@ async function extractSenderAndReceiverInfo(preDatabase) {
     const pckReceiverString = item.pck_receiver;
     const pckReceiverObject = parseSerializedString(pckReceiverString);
 
-    console.log("pckRecieverObject", pckReceiverObject);
-
     const receiverLatLng = await getLatLng(
       pckReceiverObject.address_street,
       pckReceiverObject.address_city
     );
+
     item.lat = receiverLatLng.lat;
     item.lng = receiverLatLng.lng;
 

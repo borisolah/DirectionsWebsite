@@ -10,13 +10,12 @@ const getLatLng = async (streetAddress, cityName) => {
     console.log("Using stored coordinates");
     return JSON.parse(storedData);
   }
-  console.log("encodedAdress encodedCity", encodedAddress, encodedCity);
   const response = await fetch(
     `https://maps.googleapis.com/maps/api/geocode/json?address=${encodedAddress},+${encodedCity}&key=${process.env.REACT_APP_GOOGLE_MAPS_API_KEY}`
   );
 
   if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
+    return;
   }
 
   const data = await response.json();

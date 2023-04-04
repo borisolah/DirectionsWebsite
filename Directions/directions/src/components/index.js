@@ -3,6 +3,9 @@ export { default as LocationsList } from "./LocationsList";
 export { default as createNumberedColoredMarkerIcon } from "./markerIcon";
 export { default as formatDistance } from "./formatDistance";
 export { default as formatDuration } from "./formatDuration";
+export { default as useHandleClick } from "./useHandleClick";
+export { default as markerIcon } from "./markerIcon";
+
 export const truckColors = {
   "Truck 1": "red",
   "Truck 2": "blue",
