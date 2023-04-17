@@ -1,9 +1,9 @@
-import { Box, Flex, HStack, Text, Select } from "@chakra-ui/react";
+import { Box, Flex, HStack, VStack, Text, Select } from "@chakra-ui/react";
 import { GoogleMap, Marker, DirectionsRenderer } from "@react-google-maps/api";
 import { useDatabase } from "../databaseconverter/useDatabase";
 import { useState, useEffect } from "react";
-import getAddress from "./getAddress";
-import { useTruckEffect } from "./useTruckEffect";
+import Navbar from "./Navbar";
+import { useTruckEffect } from "../components/useTruckEffect";
 import {
   formatDistance,
   formatDuration,
@@ -15,8 +15,8 @@ import {
   startingPoint,
   center,
   trucks,
-} from ".";
-import { useIsLoaded } from "./useIsLoaded";
+} from "../components";
+import { useIsLoaded } from "../components/useIsLoaded";
 
 export default function MapComponent() {
   const isLoaded = useIsLoaded();
@@ -29,7 +29,9 @@ export default function MapComponent() {
   const [directions, setDirections] = useState(null);
   const [directionsError, setDirectionsError] = useState(null);
   const [markerData, setMarkerData] = useState([]);
-  const [database] = useDatabase();
+  const [database, databaseLoading, nulledItems] = useDatabase(); // Rename loading to databaseLoading
+
+  console.log("nulledItems:", nulledItems);
 
   useEffect(() => {
     if (!loading) {
@@ -197,17 +199,6 @@ export default function MapComponent() {
     return [...selectedTruckMarkers, ...(markersByTruck["NoTruck"] || [])];
   }
 
-  async function fetchBatchAddresses(positions, apiKey) {
-    const requests = positions.map((position) =>
-      getAddress(position.lat, position.lng, apiKey)
-    );
-    const results = await Promise.allSettled(requests);
-
-    return results.map((result) =>
-      result.status === "fulfilled" ? result.value : "Not found"
-    );
-  }
-
   useTruckEffect(
     database,
     addresses,
@@ -223,39 +214,21 @@ export default function MapComponent() {
   );
 
   useEffect(() => {
-    const fetchAddresses = async () => {
-      setLoading(true);
-      const batchSize = 10;
-      for (let i = 0; i < database.length; i += batchSize) {
-        const positionBatch = database.slice(i, i + batchSize);
-        try {
-          const batchAddresses = await fetchBatchAddresses(
-            positionBatch,
-            `${process.env.REACT_APP_GOOGLE_MAPS_API_KEY}`
-          );
-          console.log("Geocoding API has been used");
+    const newAddresses = [];
 
-          setAddresses((prevAddresses) => [
-            ...prevAddresses.slice(0, i),
-            ...batchAddresses,
-            ...prevAddresses.slice(i + batchSize),
-          ]);
-        } catch (error) {
-          console.error(error);
-          setAddresses((prevAddresses) => [
-            ...prevAddresses.slice(0, i),
-            ...Array(positionBatch.length).fill("Not found"),
-            ...prevAddresses.slice(i + batchSize),
-          ]);
-        }
-      }
-
-      setLoading(false);
-    };
-
-    if (isLoaded) {
-      fetchAddresses();
+    for (let i = 0; i < database.length; i++) {
+      let address =
+        database[i].pck_receiver.address_city +
+        ", " +
+        database[i].pck_receiver.address_street +
+        ", " +
+        database[i].pck_receiver.address_zip +
+        " Hungary";
+      newAddresses.push(address);
     }
+
+    setAddresses(newAddresses);
+    setLoading(false);
   }, [isLoaded, database]);
 
   if (!isLoaded) {
@@ -270,6 +243,7 @@ export default function MapComponent() {
       h="100vh"
       w="100vw"
     >
+      <Navbar isMap /> // Add this line
       <Box position="absolute" left={0} top={0} h="100%" w="100%">
         {/*Google Maps Part */}
         <GoogleMap
@@ -374,6 +348,28 @@ export default function MapComponent() {
           ))}
         </ul>
       </Box>
+      {!databaseLoading && nulledItems.length > 0 && (
+        <Box
+          position="absolute"
+          right={4}
+          bottom={4}
+          p={4}
+          borderRadius="lg"
+          bgColor="white"
+          shadow="base"
+          zIndex="modal"
+        >
+          <Text fontWeight="bold">List of items with null properties:</Text>
+          <VStack spacing={2} align="start">
+            {nulledItems.map((item) => (
+              <Box key={item.pck_ID}>
+                <Text>{`KAPJA: ${item.pck_receiver}`}</Text>
+                <Text>{`KÜLDI: ${item.pck_sender}`}</Text>
+              </Box>
+            ))}
+          </VStack>
+        </Box>
+      )}
     </Flex>
   );
 }

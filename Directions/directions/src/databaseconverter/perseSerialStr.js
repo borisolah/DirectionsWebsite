@@ -1,5 +1,5 @@
 function parseSerializedString(serializedString) {
-  const regex = /"([^"]*)"/g;
+  const regex = /"((?:\\"|[^"])*)"/g;
   let match;
   const result = {};
 
