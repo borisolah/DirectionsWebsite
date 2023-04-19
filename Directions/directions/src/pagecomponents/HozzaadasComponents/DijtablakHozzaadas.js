@@ -1,5 +1,13 @@
 import React, { useState } from "react";
-import { Text, Input, HStack, Flex, VStack, Button } from "@chakra-ui/react";
+import {
+  Text,
+  Input,
+  HStack,
+  Flex,
+  VStack,
+  Spacer,
+  Button,
+} from "@chakra-ui/react";
 import axios from "axios";
 
 function DijtablakForm() {
@@ -64,13 +72,6 @@ function DijtablakForm() {
           onChange={handleDijtablaNeveChange}
           placeholder="Dijtábla Neve"
         />
-        <Button
-          onClick={handleAddDijtabla}
-          minWidth="160px"
-          background="blue.400"
-        >
-          Dijtábla Hozzáadása
-        </Button>
       </HStack>
       {rows.map((row, index) => (
         <HStack key={index} spacing={4}>
@@ -113,9 +114,19 @@ function DijtablakForm() {
           </Flex>
         </HStack>
       ))}
-      <Button onClick={addRow} background="green.500">
-        Add
-      </Button>
+      <Flex>
+        <Button onClick={addRow} background="green.500">
+          Új Sor
+        </Button>
+        <Button
+          marginLeft={3}
+          onClick={handleAddDijtabla}
+          minWidth="160px"
+          background="blue.400"
+        >
+          Dijtábla Hozzáadása
+        </Button>
+      </Flex>
     </VStack>
   );
 }

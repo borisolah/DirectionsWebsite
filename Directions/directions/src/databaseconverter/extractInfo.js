@@ -2,8 +2,6 @@ import parseSerializedString from "./perseSerialStr";
 import fetchBatchAddresses from "../components/fetchBatchAdresses";
 
 async function extractSenderAndReceiverInfo(preDatabase) {
-  console.log("preDatabase:", preDatabase);
-
   const nulledItems = [];
   const positions = preDatabase.map((item) => {
     try {
@@ -29,9 +27,6 @@ async function extractSenderAndReceiverInfo(preDatabase) {
       return null;
     }
   });
-
-  console.log("positions:", positions);
-  console.log("nulledItems:", nulledItems);
 
   const validPositions = positions.filter((pos) => pos !== null);
   const coordinates = await fetchBatchAddresses(validPositions);

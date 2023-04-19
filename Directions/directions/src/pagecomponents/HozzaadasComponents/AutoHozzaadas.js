@@ -8,7 +8,9 @@ import {
   Button,
   Select,
 } from "@chakra-ui/react";
+import useFetchTelephelys from "../../hooks/useFetchTelephelys";
 import usePostData from "../../hooks/usePostData";
+import useFetchSofors from "../../hooks/useFetchSofors";
 
 const inputOptions = {
   borderColor: "gray.600",
@@ -18,6 +20,16 @@ const inputOptions = {
 const TruckForm = () => {
   const { postData, loading, error } = usePostData();
   const [truckData, setTruckData] = useState({});
+  const {
+    data,
+    loading: fetchLoading,
+    error: fetchError,
+  } = useFetchTelephelys();
+  const {
+    data: soforsData,
+    loading: soforsLoading,
+    error: soforsError,
+  } = useFetchSofors();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -27,6 +39,12 @@ const TruckForm = () => {
   const handleChange = (e) => {
     setTruckData({ ...truckData, [e.target.name]: e.target.value });
   };
+
+  if (fetchLoading) return <div>Loading...</div>;
+  if (fetchError) return <div>Error: {fetchError.message}</div>;
+
+  if (soforsLoading) return <div>Loading sofors...</div>;
+  if (soforsError) return <div>Error: {soforsError.message}</div>;
 
   return (
     <Box backgroundColor="gray.100" w="400px">
@@ -94,18 +112,28 @@ const TruckForm = () => {
 
           <FormControl id="sofor">
             <FormLabel>Sofőr:</FormLabel>
-            <Select
-              name="sofor"
-              placeholder="Válassz egy sofőrt"
-              sx={inputOptions}
-              onChange={handleChange}
-            >
-              <option value="sofor1">Sofőr 1</option>
-              <option value="sofor2">Sofőr 2</option>
-              <option value="sofor3">Sofőr 3</option>
+            <Select placeholder="Sofőr Választása" sx={inputOptions}>
+              {soforsData.map((sofor) => (
+                <option key={sofor._id} value={sofor._id} sx={inputOptions}>
+                  {sofor.nev}
+                </option>
+              ))}
             </Select>
           </FormControl>
-
+          <FormControl id="telephely">
+            <FormLabel>Telephely:</FormLabel>
+            <Select placeholder="Telephely Hozzáadása" sx={inputOptions}>
+              {data.map((telephely) => (
+                <option
+                  key={telephely._id}
+                  value={telephely._id}
+                  sx={inputOptions}
+                >
+                  {telephely.nev}
+                </option>
+              ))}
+            </Select>
+          </FormControl>
           <FormControl id="auto-neve">
             <FormLabel>Autó Neve:</FormLabel>
             <Input

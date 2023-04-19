@@ -14,6 +14,13 @@ router.post("/", async (req, res) => {
     res.status(409).json({ message: error.message });
   }
 });
+router.get("/", async (req, res) => {
+  try {
+    const telephelyek = await Telephely.find();
+    res.status(200).json(telephelyek);
+  } catch (error) {
+    res.status(404).json({ message: error.message });
+  }
+});
 
 module.exports = router;
-``;

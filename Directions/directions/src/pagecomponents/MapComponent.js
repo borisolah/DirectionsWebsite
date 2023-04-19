@@ -29,9 +29,7 @@ export default function MapComponent() {
   const [directions, setDirections] = useState(null);
   const [directionsError, setDirectionsError] = useState(null);
   const [markerData, setMarkerData] = useState([]);
-  const [database, databaseLoading, nulledItems] = useDatabase(); // Rename loading to databaseLoading
-
-  console.log("nulledItems:", nulledItems);
+  const [database, databaseLoading, nulledItems] = useDatabase();
 
   useEffect(() => {
     if (!loading) {

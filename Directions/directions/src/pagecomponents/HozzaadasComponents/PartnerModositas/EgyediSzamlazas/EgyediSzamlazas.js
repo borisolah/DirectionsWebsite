@@ -13,8 +13,10 @@ import {
 import TeljesDijtabla from "./Szazalekos/TeljesDijtabla";
 import UjDijtabla from "./UjDijtabla";
 import DarabszamosArlista from "./Darabszamos/DarabszamosArlista";
+import KilometerDija from "./KilometerDijas/KilometerDija";
 
-function OptionForm({ option }) {
+function EgyediSzamlazas({ option, currentUgyfel, onBackClick }) {
+  console.log(currentUgyfel, "ASDASD");
   const [teljesDijtablaChecked, setTeljesDijtablaChecked] = useState(false);
   const [ujDijtablaChecked, setUjDijtablaChecked] = useState(false);
   const handleUjDijtablaChange = (e) => {
@@ -25,13 +27,7 @@ function OptionForm({ option }) {
   };
   if (option === "kmDij") {
     return (
-      <HStack>
-        <Text>Kilóméter dija</Text>
-        <Spacer />
-        <Input placeholder="Kilóméter dija" />
-        <Spacer />
-        <Text>Ft</Text>
-      </HStack>
+      <KilometerDija currentUgyfel={currentUgyfel} onBackClick={onBackClick} />
     );
   } else if (option === "kedvezmeny") {
     return (
@@ -50,30 +46,26 @@ function OptionForm({ option }) {
             </Checkbox>
           </HStack>
         </CheckboxGroup>
-        {teljesDijtablaChecked && <TeljesDijtabla />}
-        {ujDijtablaChecked && <UjDijtabla />}
+        {teljesDijtablaChecked && (
+          <TeljesDijtabla currentUgyfel={currentUgyfel} />
+        )}
+        {ujDijtablaChecked && <UjDijtabla currentUgyfel={currentUgyfel} />}
+
+        <Button onClick={onBackClick} mt={4} colorScheme="red">
+          Back
+        </Button>
       </FormControl>
     );
   } else if (option === "árlista") {
-    return <DarabszamosArlista />;
+    return (
+      <DarabszamosArlista
+        currentUgyfel={currentUgyfel}
+        onBackClick={onBackClick}
+      />
+    );
   } else {
     return null;
   }
 }
 
-function OptionDetails({ partner, option, onBackClick }) {
-  return (
-    <VStack>
-      <Text fontSize="2xl">{partner.name}</Text>
-      <Text>{option}</Text>
-
-      <OptionForm option={option} />
-
-      <Button onClick={onBackClick} mt={4} colorScheme="red">
-        Back
-      </Button>
-    </VStack>
-  );
-}
-
-export { OptionDetails };
+export default EgyediSzamlazas;

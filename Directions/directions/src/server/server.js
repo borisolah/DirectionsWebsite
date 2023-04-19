@@ -36,7 +36,7 @@ mongoose.connection.once("open", () => {
 // Routes
 app.use("/api/ugyfelek", ugyfelekRoutes);
 app.use("/api/trucks", truckRoutes);
-app.use("/api/soforok", soforRoutes);
+app.use("/api/sofors", soforRoutes);
 app.use("/api/telephelyek", telephelyRoutes);
 app.use("/api/dijtablak", dijtablaRoutes);
 

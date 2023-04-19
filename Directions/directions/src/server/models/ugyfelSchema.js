@@ -6,6 +6,8 @@ const ugyfelSchema = new Schema({
   telephoneNumber: { type: String, default: "" },
   email: { type: String, default: "" },
   cim: { type: String, default: "" },
+  raklapos: Schema.Types.Mixed,
+  nemRaklapos: Schema.Types.Mixed,
 });
 
 const Ugyfel = mongoose.model("Ugyfel", ugyfelSchema);

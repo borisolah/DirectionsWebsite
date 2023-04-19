@@ -3,7 +3,8 @@ const Schema = mongoose.Schema;
 
 const telephelySchema = new Schema({
   nev: { type: String, default: "" },
-  cim: { type: String, default: "" },
+  city: { type: String, default: "" },
+  utca: { type: String, default: "" },
   raktarvezeto: { type: String, default: "" },
 });
 

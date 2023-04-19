@@ -43,9 +43,18 @@ function TelephelyForm() {
               />
             </FormControl>
             <FormControl>
-              <FormLabel>Cim:</FormLabel>
+              <FormLabel>Város:</FormLabel>
               <Input
-                name="cim"
+                name="city"
+                type="text"
+                sx={inputOptions}
+                onChange={handleChange}
+              />
+            </FormControl>
+            <FormControl>
+              <FormLabel>Utca:</FormLabel>
+              <Input
+                name="utca"
                 type="text"
                 sx={inputOptions}
                 onChange={handleChange}

@@ -8,7 +8,7 @@ const usePostData = () => {
   const postData = async (url, data) => {
     setLoading(true);
     setError(null);
-    console.log("Submitting data:", data); // Add this line
+    console.log("Submitting data:", data);
 
     try {
       await axios.post(url, data);

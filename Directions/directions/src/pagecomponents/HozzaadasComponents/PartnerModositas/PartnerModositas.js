@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import {
-  Select,
   Flex,
   Button,
   Input,
@@ -13,8 +12,9 @@ import {
 import useFetchUgyfelek from "../../../hooks/useFetchUgyfelek";
 import usePutData from "../../../hooks/usePutData";
 import useFetchDijtablas from "../../../hooks/useFetchDijtablas";
+import DijtablaCheckboxes from "./DijtablaCheckboxes";
 
-function PartnerDetails({ partner, onOptionClick, onBackClick }) {
+function PartnerModositasa({ partner, onOptionClick, onBackClick }) {
   const { data: ugyfelek, loading, error } = useFetchUgyfelek();
   const [modositas, setModositas] = useState(false);
   const [editableUgyfel, setEditableUgyfel] = useState(null);
@@ -23,28 +23,13 @@ function PartnerDetails({ partner, onOptionClick, onBackClick }) {
   const [checkedA, setCheckedA] = useState(false);
   const [checkedB, setCheckedB] = useState(false);
   const [checkedEgyedi, setCheckedEgyedi] = useState(false);
-  const [selectedDijtablas, setSelectedDijtablas] = useState([]);
-  const [dijtakInputs, setDijtakInputs] = useState({});
-
-  const handleDijtablaChange = (dijtabla, checked) => {
-    const { _id, dijtak } = dijtabla;
-
-    if (checked) {
-      setSelectedDijtablas([...selectedDijtablas, _id]);
-      setDijtakInputs({ ...dijtakInputs, [_id]: dijtak });
-    } else {
-      setSelectedDijtablas(selectedDijtablas.filter((id) => id !== _id));
-      const newDijtakInputs = { ...dijtakInputs };
-      delete newDijtakInputs[_id];
-      setDijtakInputs(newDijtakInputs);
-    }
-  };
 
   const {
     data: dijtablas,
     loading: dijtablasLoading,
     error: dijtablasError,
   } = useFetchDijtablas();
+
   const handleCheckboxChange = (event) => {
     const { name, checked } = event.target;
 
@@ -62,44 +47,17 @@ function PartnerDetails({ partner, onOptionClick, onBackClick }) {
       }
     }
   };
+
+  const handleInputChange = (event, field) => {
+    setEditableUgyfel({ ...editableUgyfel, [field]: event.target.value });
+  };
+
   const handleSaveChanges = async () => {
     await putData(
       `http://localhost:3500/api/ugyfelek/${currentUgyfel._id}`,
       editableUgyfel
     );
     setModositas(false);
-  };
-  const renderDijtakInputs = () => {
-    const inputs = [];
-
-    selectedDijtablas.forEach((dijtablaId) => {
-      const dijtak = dijtakInputs[dijtablaId];
-
-      dijtak.forEach((dijt, index) => {
-        const { kgTol, kgIg, netto, brutto } = dijt;
-        if (
-          kgTol !== null &&
-          kgTol !== undefined &&
-          kgIg !== null &&
-          kgIg !== undefined
-        ) {
-          inputs.push(
-            <div key={`${dijtablaId}-${index}`} style={{ display: "flex" }}>
-              <Input value={`Tól: ${kgTol}`} isDisabled={true} />
-              <Input value={`Ig: ${kgIg}`} isDisabled={true} />
-              <Input value={`Nettó: ${netto}`} isDisabled={true} />
-              <Input value={`Bruttó: ${brutto}`} isDisabled={true} />
-            </div>
-          );
-
-          if ((index + 1) % 4 === 0) {
-            inputs.push(<br key={`break-${dijtablaId}-${index}`} />);
-          }
-        }
-      });
-    });
-
-    return inputs;
   };
 
   useEffect(() => {
@@ -108,14 +66,12 @@ function PartnerDetails({ partner, onOptionClick, onBackClick }) {
       setCurrentUgyfel(foundUgyfel);
     }
   }, [ugyfelek, partner]);
+
   useEffect(() => {
     if (currentUgyfel) {
       setEditableUgyfel({ ...currentUgyfel });
     }
   }, [currentUgyfel]);
-  const handleInputChange = (event, field) => {
-    setEditableUgyfel({ ...editableUgyfel, [field]: event.target.value });
-  };
 
   return (
     <VStack>
@@ -159,24 +115,13 @@ function PartnerDetails({ partner, onOptionClick, onBackClick }) {
               />
             </FormControl>
           </Flex>
-
           <FormLabel>Számlázási mód</FormLabel>
           <Flex>
-            {dijtablas &&
-              dijtablas.map((dijtabla) => (
-                <Checkbox
-                  key={dijtabla._id}
-                  isChecked={selectedDijtablas.includes(dijtabla._id)}
-                  onChange={(e) =>
-                    handleDijtablaChange(dijtabla, e.target.checked)
-                  }
-                >
-                  {dijtabla.dijtablaNeve}
-                </Checkbox>
-              ))}
-          </Flex>
-          <Flex wrap="wrap">{renderDijtakInputs()}</Flex>
-
+            <DijtablaCheckboxes
+              dijtablas={dijtablas}
+              currentUgyfel={currentUgyfel}
+            />
+          </Flex>{" "}
           <Checkbox
             isChecked={checkedEgyedi}
             isDisabled={checkedA || checkedB}
@@ -185,7 +130,6 @@ function PartnerDetails({ partner, onOptionClick, onBackClick }) {
           >
             Egyedi
           </Checkbox>
-
           {checkedEgyedi && (
             <>
               <Flex>
@@ -205,9 +149,6 @@ function PartnerDetails({ partner, onOptionClick, onBackClick }) {
             <Button onClick={onBackClick} mt={4} colorScheme="red">
               Back
             </Button>
-            <Button onClick={handleSaveChanges} mt={4} colorScheme="blue">
-              Számlázás Mentése
-            </Button>{" "}
           </Flex>
         </>
       )}
@@ -215,4 +156,4 @@ function PartnerDetails({ partner, onOptionClick, onBackClick }) {
   );
 }
 
-export { PartnerDetails };
+export { PartnerModositasa };

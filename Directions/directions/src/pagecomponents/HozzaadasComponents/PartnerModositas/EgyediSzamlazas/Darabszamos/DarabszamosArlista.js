@@ -4,12 +4,13 @@ import {
   Spacer,
   CheckboxGroup,
   FormControl,
+  Button,
   HStack,
 } from "@chakra-ui/react";
 import UjDijtabla from "../UjDijtabla";
-import EgysegesDarabszamDij from "../../../../EgysegesDarabszamDij";
+import EgysegesDarabszamDij from "./EgysegesDarabszamDij";
 
-function DarabszamosArlista() {
+function DarabszamosArlista({ currentUgyfel, onBackClick }) {
   const [egysegesDarabszamDij, setEgysegesDarabszamDij] = useState(false);
   const [savosDarabszam, setSavosDarabszam] = useState(false);
 
@@ -40,8 +41,16 @@ function DarabszamosArlista() {
           </Checkbox>
         </HStack>
       </CheckboxGroup>
-      {egysegesDarabszamDij && <EgysegesDarabszamDij />}
-      {savosDarabszam && <UjDijtabla />}
+      {egysegesDarabszamDij && (
+        <EgysegesDarabszamDij
+          currentUgyfel={currentUgyfel}
+          dijtablaType="egysegesDarabszamDij"
+        />
+      )}
+      {savosDarabszam && <UjDijtabla currentUgyfel={currentUgyfel} />}
+      <Button onClick={onBackClick} mt={4} colorScheme="red">
+        Back
+      </Button>
     </FormControl>
   );
 }

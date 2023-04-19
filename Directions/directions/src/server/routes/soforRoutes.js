@@ -14,5 +14,13 @@ router.post("/", async (req, res) => {
     res.status(409).json({ message: error.message });
   }
 });
+router.get("/", async (req, res) => {
+  try {
+    const sofors = await Sofor.find();
+    res.status(200).json(sofors);
+  } catch (error) {
+    res.status(404).json({ message: error.message });
+  }
+});
 
 module.exports = router;

@@ -7,7 +7,7 @@ const soforSchema = new Schema({
   szuletesiDatum: { type: Date },
   telefonszam: { type: String, default: "" },
   varos: { type: String, default: "" },
-  ervenyesKategoriak: { type: String, default: "" },
+  ervenyesKategoriak: { type: [String], default: [] },
   munkaviszonyKezdete: { type: Date },
 });
 
