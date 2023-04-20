@@ -6,6 +6,7 @@ import {
   Input,
   VStack,
   Button,
+  FormErrorMessage,
   Select,
 } from "@chakra-ui/react";
 import useFetchTelephelys from "../../hooks/useFetchTelephelys";
@@ -20,6 +21,8 @@ const inputOptions = {
 const TruckForm = () => {
   const { postData, loading, error } = usePostData();
   const [truckData, setTruckData] = useState({});
+  const [errors, setErrors] = useState({});
+
   const {
     data,
     loading: fetchLoading,
@@ -33,11 +36,37 @@ const TruckForm = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    postData("http://localhost:3500/api/trucks", truckData);
+    const newErrors = {};
+
+    if (!truckData.sofor) {
+      newErrors.sofor = "Válassz Sofőrt";
+    }
+
+    if (!truckData.telephely) {
+      newErrors.telephely = "Válassz Telephelyet";
+    }
+
+    setErrors(newErrors);
+
+    if (Object.keys(newErrors).length === 0) {
+      postData("http://localhost:3500/api/trucks", truckData);
+    }
   };
 
   const handleChange = (e) => {
-    setTruckData({ ...truckData, [e.target.name]: e.target.value });
+    if (e.target.name === "telephely") {
+      const selectedTelephely = data.find(
+        (telephely) => telephely._id === e.target.value
+      );
+      setTruckData({ ...truckData, telephely: selectedTelephely });
+    } else if (e.target.name === "sofor") {
+      const selectedSofor = soforsData.find(
+        (sofor) => sofor._id === e.target.value
+      );
+      setTruckData({ ...truckData, sofor: selectedSofor });
+    } else {
+      setTruckData({ ...truckData, [e.target.name]: e.target.value });
+    }
   };
 
   if (fetchLoading) return <div>Loading...</div>;
@@ -74,7 +103,7 @@ const TruckForm = () => {
             <FormLabel>Műszaki Év:</FormLabel>
             <Input
               name="muszakiEv"
-              type="number"
+              type="date"
               sx={inputOptions}
               onChange={handleChange}
             />
@@ -90,6 +119,15 @@ const TruckForm = () => {
             />
           </FormControl>
 
+          <FormControl id="terheles">
+            <FormLabel>Terhelés:</FormLabel>
+            <Input
+              name="terheles"
+              type="number"
+              sx={inputOptions}
+              onChange={handleChange}
+            />
+          </FormControl>
           <FormControl id="ossztomeg">
             <FormLabel>Össztömeg:</FormLabel>
             <Input
@@ -100,29 +138,36 @@ const TruckForm = () => {
             />
           </FormControl>
 
-          <FormControl id="terheles">
-            <FormLabel>Terhelés:</FormLabel>
-            <Input
-              name="terheles"
-              type="number"
+          <FormControl id="sofor" isInvalid={!!errors.sofor}>
+            <FormLabel>Sofőr:</FormLabel>
+            <Select
+              name="sofor"
+              placeholder="Válassz Sofőrt"
               sx={inputOptions}
               onChange={handleChange}
-            />
-          </FormControl>
-
-          <FormControl id="sofor">
-            <FormLabel>Sofőr:</FormLabel>
-            <Select placeholder="Sofőr Választása" sx={inputOptions}>
+              isInvalid={!!errors.sofor}
+            >
               {soforsData.map((sofor) => (
                 <option key={sofor._id} value={sofor._id} sx={inputOptions}>
                   {sofor.nev}
                 </option>
               ))}
             </Select>
+            {errors.sofor && (
+              <FormErrorMessage color="red" mt={1}>
+                {errors.sofor}
+              </FormErrorMessage>
+            )}
           </FormControl>
-          <FormControl id="telephely">
+          <FormControl id="telephely" isInvalid={!!errors.telephely}>
             <FormLabel>Telephely:</FormLabel>
-            <Select placeholder="Telephely Hozzáadása" sx={inputOptions}>
+            <Select
+              name="telephely"
+              placeholder="Válassz Telephelyet"
+              sx={inputOptions}
+              onChange={handleChange}
+              isInvalid={!!errors.telephely}
+            >
               {data.map((telephely) => (
                 <option
                   key={telephely._id}
@@ -133,7 +178,13 @@ const TruckForm = () => {
                 </option>
               ))}
             </Select>
+            {errors.telephely && (
+              <FormErrorMessage color="red" mt={1}>
+                {errors.telephely}
+              </FormErrorMessage>
+            )}
           </FormControl>
+
           <FormControl id="auto-neve">
             <FormLabel>Autó Neve:</FormLabel>
             <Input

@@ -6,10 +6,9 @@ export const truckColors = {
   "Truck 5": "yellow",
   "Truck 6": "orange",
   "Truck 7": "pink",
-  NoTruck: "gray",
 };
 
-export const startingPoint = { lat: 46.253, lng: 20.1414 }; //Szeged
+export const startingPoint = { lat: 46.253, lng: 20.1414 };
 export const center = { lat: 47.1625, lng: 19.5033 };
 export const trucks = [
   "Truck 1",

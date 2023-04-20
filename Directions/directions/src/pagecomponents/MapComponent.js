@@ -14,11 +14,10 @@ import {
   truckColors,
   startingPoint,
   center,
-  trucks,
 } from "../components";
 import { useIsLoaded } from "../components/useIsLoaded";
 
-export default function MapComponent() {
+export default function MapComponent({ database, trucks }) {
   const isLoaded = useIsLoaded();
   const [orderedAddresses, setOrderedAddresses] = useState([]);
   const [distance, setDistance] = useState(0);
@@ -29,7 +28,7 @@ export default function MapComponent() {
   const [directions, setDirections] = useState(null);
   const [directionsError, setDirectionsError] = useState(null);
   const [markerData, setMarkerData] = useState([]);
-  const [database, databaseLoading, nulledItems] = useDatabase();
+  const [, databaseLoading, nulledItems] = useDatabase();
 
   useEffect(() => {
     if (!loading) {
@@ -46,20 +45,22 @@ export default function MapComponent() {
     groupMarkersByTruck,
     calculateDirections
   );
-
   async function calculateDirections(truck, markers) {
     if (markers.length < 2 || truck === "Marks Without A Truck") {
       setDirections(null);
       setDirectionsError(null);
+      console.log("No truck or not enough markers, skipping...");
       return;
     }
+    console.log(truck);
 
     const origin = markers[0];
     const destination = markers[markers.length - 1];
-    const waypoints = markers.filter((m) => `Truck ${m.truck}` === truck);
+    const waypoints = markers.filter((m) => m.truck === truck._id);
 
     const MAX_WAYPOINTS = 25;
-    const numLegs = Math.floor(1, Math.ceil(waypoints.length / MAX_WAYPOINTS));
+    const numLegs = Math.max(1, Math.ceil(waypoints.length / MAX_WAYPOINTS));
+
     const legs = [];
 
     for (let i = 0; i < numLegs; i++) {
@@ -75,7 +76,6 @@ export default function MapComponent() {
 
       const legResult = await new Promise((resolve, reject) => {
         const directionsService = new window.google.maps.DirectionsService();
-        console.log("Directions API has been used");
 
         directionsService.route(
           {
@@ -156,45 +156,45 @@ export default function MapComponent() {
 
     for (let i = 0; i < database.length; i++) {
       const position = database[i];
-      const truck = database[i].truck;
+      const truckId = database[i].truck;
 
-      if (!truck) {
+      if (!truckId) {
         if (!markersByTruck["NoTruck"]) {
           markersByTruck["NoTruck"] = [];
         }
         markersByTruck["NoTruck"].push({ ...position, id: i });
-      } else if (
-        selectedTruck === `Truck ${truck}` ||
-        (selectedTruck === "Marks Without A Truck" && !database[i].truck)
-      ) {
-        if (!markersByTruck[truck]) {
-          markersByTruck[truck] = [];
+      } else if (selectedTruck._id === truckId || !selectedTruck._id) {
+        if (!markersByTruck[truckId]) {
+          markersByTruck[truckId] = [];
         }
-        markersByTruck[truck].push({ ...position, id: i });
+        markersByTruck[truckId].push({ ...position, id: i });
       }
     }
 
-    for (const truck in markersByTruck) {
-      markersByTruck[truck].unshift(startingPoint);
-      markersByTruck[truck].push(startingPoint);
+    for (const truckId in markersByTruck) {
+      const startingPoint = {
+        lat: selectedTruck.telephely.lat,
+        lng: selectedTruck.telephely.lng,
+      };
+      const endingPoint = {
+        lat: selectedTruck.telephely.lat,
+        lng: selectedTruck.telephely.lng,
+      };
+
+      markersByTruck[truckId].unshift(startingPoint);
+      markersByTruck[truckId].push(endingPoint);
     }
 
-    if (!selectedTruck) {
-      return Object.values(markersByTruck).flat();
+    if (!selectedTruck._id) {
+      const allMarkers = Object.values(markersByTruck).flat();
+      return allMarkers;
     }
 
-    if (selectedTruck === "Marks Without A Truck") {
-      return markersByTruck["NoTruck"] || [];
-    }
+    const selectedTruckMarkers = markersByTruck[selectedTruck._id] || [];
 
-    const selectedTruckMarkers =
-      markersByTruck[
-        selectedTruck === "Marks Without A Truck"
-          ? "NoTruck"
-          : selectedTruck.split(" ")[1]
-      ] || [];
+    const markersWithoutTruck = markersByTruck["NoTruck"] || [];
 
-    return [...selectedTruckMarkers, ...(markersByTruck["NoTruck"] || [])];
+    return [...selectedTruckMarkers, ...markersWithoutTruck];
   }
 
   useTruckEffect(
@@ -275,14 +275,16 @@ export default function MapComponent() {
               )?.truck;
               const color = isStartingOrEndingPoint
                 ? "black"
-                : truckColors[`Truck ${truck}`] || truckColors["NoTruck"];
+                : truck
+                ? "blue"
+                : truckColors["NoTruck"];
 
               return (
                 <Marker
                   key={index}
                   position={{ lat: position.lat, lng: position.lng }}
                   draggable={false}
-                  icon={createNumberedColoredMarkerIcon(color, 1)}
+                  icon={createNumberedColoredMarkerIcon(color)}
                   onClick={() => handleClick(position.id)}
                 />
               );
@@ -309,7 +311,7 @@ export default function MapComponent() {
           <TruckSelector
             selectedTruck={selectedTruck}
             setSelectedTruck={setSelectedTruck}
-            trucks={["Marks Without A Truck", ...trucks]}
+            trucks={[...trucks]}
           />
         </HStack>
       </Box>

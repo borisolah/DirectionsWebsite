@@ -10,10 +10,8 @@ const databasePromise = async () => {
     if (response.status !== 200) {
       throw new Error(`Request failed with status ${response.status}`);
     }
-    console.log("responsedata", response.data);
 
     const result = await extractSenderAndReceiverInfo(response.data);
-    console.log("result", result);
     return result;
   } catch (error) {
     console.error("Error fetching data:", error);

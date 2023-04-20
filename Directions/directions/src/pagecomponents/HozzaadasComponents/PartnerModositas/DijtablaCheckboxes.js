@@ -9,7 +9,6 @@ const DijtablaCheckboxes = ({ dijtablas, currentUgyfel }) => {
   const [checkedNemRaklapos, setCheckedNemRaklapos] = useState(false);
   const { createOrUpdateData, loading, error } = useCreateOrUpdateData();
 
-  console.log(currentUgyfel, "CURRENTUGYFEL");
   const handleDijtablaChange = (dijtablaId) => {
     const dijtabla = dijtablas.find((d) => d._id === dijtablaId);
 

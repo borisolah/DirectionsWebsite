@@ -7,7 +7,7 @@ import { useDatabase } from "./databaseconverter/useDatabase";
 import HozzadasForm from "./pagecomponents/HozzaadasComponents/HozzadasForm.js";
 
 function App() {
-  const [database, loading] = useDatabase();
+  const [database, loading, nulledItems, trucks] = useDatabase();
 
   if (!loading) {
     return (
@@ -27,7 +27,7 @@ function App() {
             element={
               <Box position="relative" overflow="hidden">
                 <Navbar isMap />
-                <MapComponent />
+                <MapComponent database={database} trucks={trucks} />
               </Box>
             }
           />

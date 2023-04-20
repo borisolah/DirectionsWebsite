@@ -6,6 +6,8 @@ const telephelySchema = new Schema({
   city: { type: String, default: "" },
   utca: { type: String, default: "" },
   raktarvezeto: { type: String, default: "" },
+  lat: { type: Number, default: null },
+  lng: { type: Number, default: null },
 });
 
 const Telephely = mongoose.model("Telephely", telephelySchema);

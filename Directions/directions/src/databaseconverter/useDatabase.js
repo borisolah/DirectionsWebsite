@@ -1,20 +1,30 @@
 import { useState, useEffect } from "react";
 import databasePromise from "./databasePromise";
+import useFetchTrucks from "../hooks/useFetchTrucks";
 
 export const useDatabase = () => {
   const [database, setDatabase] = useState([]);
-  const [databaseLoading, setDatabaseLoading] = useState(true); // Rename loading to databaseLoading
+  const [databaseLoading, setDatabaseLoading] = useState(true);
   const [nulledItems, setNulledItems] = useState([]);
+  const {
+    data: trucks,
+    loading: trucksLoading,
+    error: trucksError,
+  } = useFetchTrucks();
 
   useEffect(() => {
     (async () => {
-      const result = await databasePromise();
-      setDatabase(result.newDatabase);
-      setNulledItems(result.nulledItems);
-      setDatabaseLoading(false); // Rename setLoading to setDatabaseLoading
+      try {
+        const [result] = await Promise.all([databasePromise()]);
+        setDatabase(result.newDatabase);
+        setNulledItems(result.nulledItems);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setDatabaseLoading(false);
+      }
     })();
   }, []);
 
-  // Make sure the return statement is inside the useDatabase function
-  return [database, databaseLoading, nulledItems]; // Rename loading to databaseLoading
+  return [database, databaseLoading, nulledItems, trucks];
 };

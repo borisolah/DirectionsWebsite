@@ -19,6 +19,7 @@ export const useTruckEffect = (
       addresses,
       selectedTruck
     );
+
     markersByTruck = markersByTruck.filter((marker) => {
       if (selectedTruck !== "Marks Without A Truck") {
         return database[marker.id]?.truck;
@@ -28,14 +29,6 @@ export const useTruckEffect = (
     markersByTruck.unshift(startingPoint);
     markersByTruck.push(startingPoint);
 
-    if (selectedTruck === "Marks Without A Truck") {
-      setDirections(null);
-      setDirectionsError(null);
-      setDistance(0);
-      setDuration(0);
-      setOrderedAddresses([]);
-    } else {
-      calculateDirections(selectedTruck, markersByTruck);
-    }
+    calculateDirections(selectedTruck, markersByTruck);
   }, [selectedTruck, database, addresses]);
 };

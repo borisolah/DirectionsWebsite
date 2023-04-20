@@ -6,7 +6,6 @@ const Truck = require("../models/truckSchema");
 router.post("/", async (req, res) => {
   const truckData = req.body;
   const newTruck = new Truck(truckData);
-  console.log("Received data:", req.body); // Add this line
 
   try {
     await newTruck.save();
@@ -15,5 +14,12 @@ router.post("/", async (req, res) => {
     res.status(409).json({ message: error.message });
   }
 });
-
+router.get("/", async (req, res) => {
+  try {
+    const trucks = await Truck.find();
+    res.status(200).json(trucks);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 module.exports = router;

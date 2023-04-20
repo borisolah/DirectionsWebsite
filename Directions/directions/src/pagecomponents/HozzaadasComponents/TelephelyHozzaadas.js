@@ -10,6 +10,21 @@ import {
 } from "@chakra-ui/react";
 import usePostData from "../../hooks/usePostData";
 
+async function getLatLng(city, street) {
+  const search = encodeURIComponent(`${city} ${street}`);
+  const response = await fetch(
+    `https://nominatim.openstreetmap.org/search?format=json&q=${search}&limit=1`
+  );
+
+  const result = await response.json();
+
+  if (result.length > 0) {
+    return { lat: result[0].lat, lng: result[0].lon };
+  }
+
+  return { lat: null, lng: null };
+}
+
 const inputOptions = {
   borderColor: "gray.600",
   borderWidth: "2px",
@@ -19,9 +34,16 @@ function TelephelyForm() {
   const { postData, loading, error } = usePostData();
   const [telephelyData, setTelephelyData] = useState({});
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    postData("http://localhost:3500/api/telephelyek", telephelyData);
+
+    const { city, utca } = telephelyData;
+    const coords = await getLatLng(city, utca);
+
+    postData("http://localhost:3500/api/telephelyek", {
+      ...telephelyData,
+      ...coords,
+    });
   };
 
   const handleChange = (e) => {
