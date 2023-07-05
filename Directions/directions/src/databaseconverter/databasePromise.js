@@ -4,7 +4,7 @@ import extractSenderAndReceiverInfo from "./extractInfo";
 const databasePromise = async () => {
   try {
     const response = await axios.get(
-      "https://www.hejjavitko.hu/api/getPackages"
+      
     );
 
     if (response.status !== 200) {
@@ -20,6 +20,3 @@ const databasePromise = async () => {
 };
 
 export default databasePromise;
-
-// https://www.hejjavitko.hu/api/getPackages
-// "mongodb+srv://borisz0929:yW9M9KivNC1XVdW1@cluster0.foweg.mongodb.net/DirectionsDB?retryWrites=true&w=majority",
