@@ -22,7 +22,6 @@ app.use(express.urlencoded({ extended: true }));
 
 // Connect to MongoDB Atlas
 mongoose.connect(
-  "mongodb+srv://borisz0929:yW9M9KivNC1XVdW1@cluster0.foweg.mongodb.net/DirectionsDB?retryWrites=true&w=majority",
   {
     useNewUrlParser: true,
     useUnifiedTopology: true,
